@@ -1,0 +1,4 @@
+node_modules
+.env
+raqamlar.txt
+package-lock.json
