@@ -179,3 +179,4 @@ module.exports = (bot, User, adminId, adminState) => {
   await bot.answerCallbackQuery(query.id);
   }
 });
+}
