@@ -436,7 +436,8 @@ bot.on('callback_query', async (query) => {
     id: activationId,
     number,
     time: Date.now(),
-    checking: false
+    checking: false,
+    country: country 
   });
 
   bot.sendMessage(
@@ -498,12 +499,19 @@ bot.on('callback_query', async (query) => {
 
     if (passed < 180) {
       return bot.answerCallbackQuery(query.id, {
-        text: `⏳ Bekor qilish faqat 3 daqiqadan keyin mumkin (${180 - Math.floor(passed)}s qoldi)`
+        text: `⏳ Bekor qilish faqat 3 daqiqadan keyin mumkin (${180 - Math.floor(passed)}s qoldi)`,
+        show_alert: true
       });
     }
 
     await setStatus(act.id, -1);
-
+      const user = await User.findOne({ id: chatId });
+      if (user) {
+        const price = countries[act.country].price;
+        user.balance += price;
+        await user.save();
+        bot.sendMessage(chatId, `✅ Aktivatsiya bekor qilindi va ${price} so'm balansingizga qaytarildi.`);
+      }
     activations.delete(chatId);
 
     bot.answerCallbackQuery(query.id, { text: "❌ Aktivatsiya bekor qilindi!" });
