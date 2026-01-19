@@ -157,9 +157,7 @@ module.exports = (bot, User, adminId, adminState) => {
     parse_mode: 'HTML'
   });
   await bot.answerCallbackQuery(query.id);
-} else if (adminState[chatId]?.step === 'announcement_text') {
-  // Bu callback emas, message handler'da bajariladi
-} else if (data === 'confirm_send_announcement') {
+}  else if (data === 'confirm_send_announcement') {
   const state = adminState[chatId];
   if (!state) return;
   const users = await User.find({}, 'id');
@@ -179,5 +177,5 @@ module.exports = (bot, User, adminId, adminState) => {
   delete adminState[chatId];
   await bot.sendMessage(chatId, '❌ E\'lon bekor qilindi.');
   await bot.answerCallbackQuery(query.id);
-  });
-};
+  }
+});
