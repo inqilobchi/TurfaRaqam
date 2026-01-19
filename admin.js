@@ -21,7 +21,8 @@ module.exports = (bot, User, adminId, adminState) => {
           ]);
         });
 
-        inlineKeyboard.push([{ text: '🔍 Foydalanuvchi qidirish', callback_data: 'search_user' }]);
+       inlineKeyboard.push([{ text: '🔍 Foydalanuvchi qidirish', callback_data: 'search_user' }]);
+       inlineKeyboard.push([{ text: '📢 E\'lon yuborish', callback_data: 'send_announcement' }]);  
 
         await bot.sendMessage(chatId, text, {
           parse_mode: 'HTML',
@@ -32,7 +33,20 @@ module.exports = (bot, User, adminId, adminState) => {
         await bot.sendMessage(chatId, '❌ Xatolik yuz berdi.');
       }
     }
-
+    if (adminState[chatId]?.step === 'announcement_text') {
+  const announcementText = msg.text;
+  adminState[chatId].announcementText = announcementText;
+  adminState[chatId].step = 'confirm_announcement';
+  return bot.sendMessage(chatId, `<b>📢 E'lon matni:</b>\n${announcementText}\n\nYuborishni tasdiqlaysizmi?`, {
+    parse_mode: 'HTML',
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '✅ Yuborish', callback_data: 'confirm_send_announcement' }],
+        [{ text: '❌ Bekor qilish', callback_data: 'cancel_send_announcement' }]
+      ]
+    }
+  });
+}
     // Admin state uchun miqdor so'rash (mavjud)
     if (adminState[chatId]?.step === 'amount') {
       const amount = parseInt(msg.text);
@@ -137,6 +151,33 @@ module.exports = (bot, User, adminId, adminState) => {
       delete adminState[chatId];
       await bot.sendMessage(chatId, '❌ Bekor qilindi.');
       await bot.answerCallbackQuery(query.id);
+    } } else if (data === 'send_announcement') {
+  adminState[chatId] = { step: 'announcement_text' };
+  await bot.sendMessage(chatId, '<b>📢 E\'lon matnini kiriting:</b>', {
+    parse_mode: 'HTML'
+  });
+  await bot.answerCallbackQuery(query.id);
+} else if (adminState[chatId]?.step === 'announcement_text') {
+  // Bu callback emas, message handler'da bajariladi
+} else if (data === 'confirm_send_announcement') {
+  const state = adminState[chatId];
+  if (!state) return;
+  const users = await User.find({}, 'id');
+  let sentCount = 0;
+  for (const user of users) {
+    try {
+      await bot.sendMessage(user.id, state.announcementText, { parse_mode: 'HTML' });
+      sentCount++;
+    } catch (err) {
+      console.error(`Xabar yuborishda xatolik ${user.id}:`, err.message);
     }
+  }
+  await bot.sendMessage(chatId, `✅ E'lon ${sentCount} ta foydalanuvchiga yuborildi.`);
+  delete adminState[chatId];
+  await bot.answerCallbackQuery(query.id);
+} else if (data === 'cancel_send_announcement') {
+  delete adminState[chatId];
+  await bot.sendMessage(chatId, '❌ E\'lon bekor qilindi.');
+  await bot.answerCallbackQuery(query.id);
   });
 };
