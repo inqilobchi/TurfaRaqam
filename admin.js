@@ -151,7 +151,7 @@ module.exports = (bot, User, adminId, adminState) => {
       delete adminState[chatId];
       await bot.sendMessage(chatId, '❌ Bekor qilindi.');
       await bot.answerCallbackQuery(query.id);
-    } } else if (data === 'send_announcement') {
+    } else if (data === 'send_announcement') {
   adminState[chatId] = { step: 'announcement_text' };
   await bot.sendMessage(chatId, '<b>📢 E\'lon matnini kiriting:</b>', {
     parse_mode: 'HTML'
