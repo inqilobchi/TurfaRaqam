@@ -78,6 +78,7 @@ const tempReferrers = new Map();
 const apiKey = process.env.API_KEY;
 
 const countries = {
+  "🇺🇿 Uzbekistan":   { code: 0,   price: 10060,  providerIds: null },
   "🇰🇪 Kenya":        { code: 8,   price: 5260,  providerIds: null },
   "🇮🇩 Indonesia":    { code: 6,   price: 5920,  providerIds: null },
   "🇵🇰 Pakistan":     { code: 66,  price: 6500,  providerIds: null },
