@@ -91,16 +91,46 @@ const menu = [
   [{ text: "📍Admin" }, { text: "📄Bot haqida" }]
 ];
 
-async function getNumber(service, country, maxPrice, providerIds) {
-  let url =
-    `https://api.grizzlysms.com/stubs/handler_api.php?api_key=${apiKey}` +
-    `&action=getNumber&service=${service}&country=${country}&maxPrice=${maxPrice}`;
+// async function getNumber(service, country, maxPrice, providerIds) {
+//   let url =
+//     `https://api.grizzlysms.com/stubs/handler_api.php?api_key=${apiKey}` +
+//     `&action=getNumber&service=${service}&country=${country}&maxPrice=${maxPrice}`;
 
-  if (providerIds) url += `&providerIds=${providerIds}`;
+//   if (providerIds) url += `&providerIds=${providerIds}`;
 
-  const res = await axios.get(url).catch(() => ({ data: "API_ERROR" }));
+//   const res = await axios.get(url).catch(() => ({ data: "API_ERROR" }));
 
-  return res.data;
+//   return res.data;
+// }
+async function getNumberWithRetry(service, country, maxPrice, providerIds, retries = 10, delay = 5000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    const url = `https://api.grizzlysms.com/stubs/handler_api.php`;
+    const res = await axios.get(url, {
+      params: {
+        api_key: apiKey,
+        action: 'getNumber',
+        service,
+        country,
+        maxPrice,
+        providerIds
+      }
+    }).catch(() => ({ data: "API_ERROR" }));
+
+    const data = res.data;
+
+    if (data.startsWith("ACCESS_NUMBER")) {
+      return data;  // Raqam topildi
+    }
+
+    if (data === "NO_NUMBERS") {
+      console.log(`Attempt ${attempt} failed, retrying in ${delay/1000}s...`);
+      await new Promise(r => setTimeout(r, delay));
+    } else {
+      return data; // BAD_KEY yoki boshqa xatolar
+    }
+  }
+
+  return "NO_NUMBERS"; 
 }
 
 async function setStatus(id, status) {
@@ -420,7 +450,8 @@ bot.on('callback_query', async (query) => {
     return bot.sendMessage(chatId, "❌ Balansingiz yetarli emas!");
   }
 
-  const res = await getNumber(service, countryCode, price, providerIds);
+  // const res = await getNumber(service, countryCode, price, providerIds);
+  const res = await getNumberWithRetry(service, countryCode, price, providerIds, 10, 5000);
 
   if (!res.startsWith("ACCESS_NUMBER")) {
     return bot.sendMessage(chatId, "❌ Raqam mavjud emas, boshqa davlat tanlang.");
