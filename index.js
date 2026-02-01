@@ -81,7 +81,7 @@ const countries = {
   "🇺🇿 Uzbekistan":   { code: 40,   price: 10060,  providerIds: null },
   "🇰🇪 Kenya":        { code: 8,   price: 5260,  providerIds: null },
   "🇮🇩 Indonesia":    { code: 6,   price: 5920,  providerIds: null },
-  "🇵🇰 Pakistan":     { code: 66,  price: 6500,  providerIds: null },
+  "🇧🇩 Bangladesh":     { code: 60,  price: 6990,  providerIds: null },
   "🇵🇭 Philippines":  { code: 4,   price: 7250,  providerIds: null },
   "🇺🇸 USA":          { code: 12,  price: 7800,  providerIds: null }
 };
